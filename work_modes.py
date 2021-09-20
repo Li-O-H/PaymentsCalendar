@@ -22,6 +22,8 @@ def mode1(user, password, input_file, output_file):
         if len(active_codes) == 0:
             messagebox.showinfo("Выполнение остановлено", "В базе данных нет информации об активных статьях")
             return
+        if not db_worker.refresh_records(connection):
+            return
         if excel_worker.mode1_execute(input_file, connection, active_codes, dept_id, output_file):
             messagebox.showinfo("Выполнено", f"Значения из базы данных записаны в файл {output_file}")
     except Exception as e:
@@ -82,6 +84,8 @@ def mode3(user, password, input_file, output_file):
             return
         if len(active_codes) == 0:
             messagebox.showinfo("Выполнение остановлено", "В базе данных нет информации об активных статьях")
+            return
+        if not db_worker.refresh_records(connection):
             return
         if excel_worker.mode3_execute(input_file, connection, active_codes, departments, output_file):
             messagebox.showinfo("Выполнено", f"Значения из базы данных записаны в файл {output_file}")
