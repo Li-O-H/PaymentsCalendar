@@ -363,17 +363,18 @@ def mode2_execute(infile, active_codes):
                     if sheet.cell(dr[1], column).value is not None:
                         value = format_value_to_db(str(sheet.cell(dr[1], column).value), calc, currency, dr[1], column)
                         if value is not None:
-                            comment = sheet.cell(dr[1], column).comment
-                            if comment is None or not is_comment_valid(comment):
-                                records.append(
-                                    db_worker.DbWriteRecord(code,
-                                                            str(sheet.cell(columns_names_row, column).value.date()),
-                                                            dr[0], currency, value))
-                            else:
-                                records.append(
-                                    db_worker.DbWriteRecord(code,
-                                                            str(sheet.cell(columns_names_row, column).value.date()),
-                                                            dr[0], currency, value, comment.text))
+                            if not is_number(value) or abs(float(value)) > 1e-5:
+                                comment = sheet.cell(dr[1], column).comment
+                                if comment is None or not is_comment_valid(comment):
+                                    records.append(
+                                        db_worker.DbWriteRecord(code,
+                                                                sheet.cell(columns_names_row, column).value.date(),
+                                                                dr[0], currency, value))
+                                else:
+                                    records.append(
+                                        db_worker.DbWriteRecord(code,
+                                                                sheet.cell(columns_names_row, column).value.date(),
+                                                                dr[0], currency, value, comment.text))
                         else:
                             messagebox.showerror("Ошибка", f"Неверное значение: лист {currency}, строка {dr[1]}, "
                                                            f"столбец {openpyxl.utils.get_column_letter(column)}")

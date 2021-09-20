@@ -116,7 +116,7 @@ def write_records(connection, department_id, records):
                 comment_text = "null"
             else:
                 comment_text = f"'{record.comment_text}'"
-            date = f"{record.date} {default_time}"
+            date = f"{str(record.date)} {default_time}"
             # Для каждой записи формируем будущую запись в БД
             values = f"{values}({department_id}, {position_id}, {currency_id}, {record.direction}, " \
                      f"'{date}', '{record.value}', {comment_text}, '{current_timestamp}'), "
