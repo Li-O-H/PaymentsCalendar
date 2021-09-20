@@ -132,15 +132,11 @@ def write_records(connection, department_id, records):
                                  f"Таблица {records_table} в базе данных повреждена, отсутствует или недоступна")
             return False
         connection.commit()
-        refresh_records(connection)
         return True
 
 
 # Поиск записи в БД
 def get_record(connection, department_id, position_code, date, direction, currency_name):
-    if len(records_saved_table) == 0:
-        if not refresh_records(connection):
-            return None
     # Находим id валюты, соответствующий currency_name
     currency_id = get_currency_id(connection, currency_name)
     if currency_id is None:
@@ -156,7 +152,7 @@ def get_record(connection, department_id, position_code, date, direction, curren
     return DbReadRecord(None, None)
 
 
-# Обновление считанных записей
+# Обновление считанных записей (нужно выполнять перед поиском записей в БД)
 def refresh_records(connection):
     with connection.cursor() as cursor:
         try:
@@ -166,9 +162,7 @@ def refresh_records(connection):
                                  f"Таблица {records_table} в базе данных повреждена, отсутствует или недоступна")
             return False
         records_saved_table.clear()
-        db_respond = cursor.fetchall()
-        for record in db_respond:
-            records_saved_table.append(record)
+        records_saved_table.extend(cursor.fetchall())
         return True
 
 
