@@ -52,10 +52,16 @@ c_short_name_column = "shortname"
 
 default_time = "13:00:00"
 
+# Словарь, позволяющий найти короткое имя подразделения по id (используется при формировании комментария при своде)
 departments_short_names = {}
+# Словарь, позволяющий найти id валюты по короткому имени
 currencies_ids = {}
+# Словарь, позволяющий найти id статьи по коду
 positions_ids = {}
+# Сохраненная из БД таблица с записями
 records_saved_table = []
+# Словарь, в котором каждой дате сопоставлены строки в сохраненной таблице
+dates_rows = {}
 
 
 # Объект, представляющий запись, которую нужно сохранить в БД
@@ -145,10 +151,11 @@ def get_record(connection, department_id, position_code, date, direction, curren
     position_id = get_position_id(connection, position_code)
     if position_id is None:
         return None
-    for record in records_saved_table:
-        if record[1] == department_id and record[2] == position_id and record[3] == currency_id and \
-                record[4] == direction and record[5].date() == date:
-            return DbReadRecord(record[6], record[7])
+    if dates_rows.get(date.toordinal()) is not None:
+        for row in dates_rows[date.toordinal()]:
+            if records_saved_table[row][1] == department_id and records_saved_table[row][3] == currency_id and \
+                    records_saved_table[row][4] == direction and records_saved_table[row][2] == position_id:
+                return DbReadRecord(records_saved_table[row][6], records_saved_table[row][7])
     return DbReadRecord(None, None)
 
 
@@ -163,6 +170,12 @@ def refresh_records(connection):
             return False
         records_saved_table.clear()
         records_saved_table.extend(cursor.fetchall())
+        dates_rows.clear()
+        for i in range(len(records_saved_table)):
+            if dates_rows.get(records_saved_table[i][5].toordinal()) is None:
+                dates_rows[records_saved_table[i][5].toordinal()] = [i]
+            else:
+                dates_rows[records_saved_table[i][5].toordinal()].append(i)
         return True
 
 
